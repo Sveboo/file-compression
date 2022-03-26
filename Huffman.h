@@ -1,6 +1,6 @@
 #ifndef HUFFMAN_H
 #define HUFFMAN_H
-#define CODE_SIZE 256
+#define CODE_SIZE 8
 
 typedef struct node {
     unsigned char symb;
@@ -25,11 +25,11 @@ typedef union bit2char {
     }mbit;
 }BIT2CHAR;
 
+void AddList(NODE **pphead, NODE *elem);
+
 NODE * MakeTreeFromList(NODE * head);
 
 NODE *MakeNodeFromNode(const NODE * left, const NODE * right);
 
-void Add2List(NODE **pphead, int val);
-
-#elif
+#endif
 

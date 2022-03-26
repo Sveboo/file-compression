@@ -1,18 +1,17 @@
 #include <stdio.h>
-#include "Huffman.h"
 #include <stdlib.h>
+#include "Huffman.h"
 
-void AddList(NODE **pphead, int val) {
-    NODE **pp = pphead, *pnew;
+void AddList(NODE **pphead, NODE *elem) {
+    NODE **pp = pphead;
     while (*pp) {
-        if (val < (*pp)->value)
+        if (elem->freq < (*pp)->freq)
             break;
         else
-            pp = &((*pp)->pnext);
+            pp = &((*pp)->next);
     }
-    pnew = (NODE *) malloc(sizeof(NODE));
-    pnew->value = val;
-    pnew->pnext = *pp;
+    NODE* pnew = elem;
+    pnew->next = *pp;
     *pp = pnew;
 }
 
