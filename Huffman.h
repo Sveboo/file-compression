@@ -1,18 +1,15 @@
 #ifndef HUFFMAN_H
 #define HUFFMAN_H
-#define CODE_SIZE 8
 
 typedef struct node {
     unsigned char symb;
     unsigned char isSymb;
-    unsigned int freq;
-    unsigned char code[CODE_SIZE];
-    int level;
+    unsigned long freq;
     struct node * left, *right, *next;
 }NODE;
 
 typedef union bit2char {
-    char symb;
+    char symbol;
     struct bit {
         unsigned b1 : 1;
         unsigned b2 : 1;
@@ -27,9 +24,21 @@ typedef union bit2char {
 
 void AddList(NODE **pphead, NODE *elem);
 
-NODE * MakeTreeFromList(NODE * head);
+NODE* MakeTreeFromList(NODE * head);
 
-NODE *MakeNodeFromNode(const NODE * left, const NODE * right);
+NODE* MakeNodeFromNode(const NODE * left, const NODE * right);
 
+NODE* MakeNode(char symb,unsigned long freq);
+
+NODE* makeList(FILE *input);
+
+void compression(FILE *input);
+
+void makeCode(NODE *head, char *s_string, unsigned long len, char** code, unsigned long *newLen);
+
+char* makeStr(char** codeTable,const unsigned long newLen, FILE *input,
+              unsigned long* newFileLen, unsigned long* nullTail);
+
+void writeFile(char *result,unsigned long newFileLen,unsigned long nullTail, char ** code);
 #endif
 
