@@ -32,13 +32,13 @@ NODE* MakeNode(char symb,unsigned long freq);
 
 NODE* makeList(FILE *input);
 
-void compression(FILE *input);
+void compression(FILE *input, char* name);
 
-void makeCode(NODE *head, char *s_string, unsigned long len, char** code, unsigned long *newLen);
+void makeCode(NODE *head, char *s_string, unsigned long len, char** code);
 
-char* makeStr(char** codeTable,const unsigned long newLen, FILE *input,
-              unsigned long* newFileLen, unsigned long* nullTail);
+char* makeStr(char** codeTable, FILE *input, unsigned long *newLen,
+               unsigned long* nullTail);
 
-void writeFile(char *result,unsigned long newFileLen,unsigned long nullTail, char ** code);
+void writeFile(char * filename, char *result,unsigned long newFileLen,unsigned long nullTail, char ** code);
 #endif
 

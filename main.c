@@ -4,7 +4,8 @@
 #include "Huffman.h"
 
 int main() {
-    FILE *input = fopen("tests.txt", "rb");
-    compression(input);
-   fclose(input);
+    char * filename = "billy.txt";
+    FILE *input = fopen(filename, "rb");
+    compression(input, "out.txt");
+    fclose(input);
 }

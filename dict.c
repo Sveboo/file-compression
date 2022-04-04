@@ -225,7 +225,7 @@ static unsigned long hash(const char *str)
 }
 
 
-int main () {
+int kmain () {
     StrMap* dict = sm_new(256);
     char buff;
     sm_put(dict, "keeeeey", '1');

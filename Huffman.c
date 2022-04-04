@@ -72,46 +72,58 @@ NODE* makeList(FILE *input){
     return head;
 }
 
-void compression(FILE *input){
-    NODE *head = makeList(input);
-
-    head = MakeTreeFromList(head);
-
-    char codeString[100] = {0};//можно увеличить длину - строка для хранения кода символа
-    char ** codeTable = (char**)calloc(256 , sizeof (char*));
-    unsigned long newLen = 0;
-    makeCode(head, codeString, 0, codeTable, &newLen);
-
-    unsigned long newFileLen = 0;
-    unsigned long nullTail = 0;
-    char* result = makeStr(codeTable, newLen, input, &newFileLen, &nullTail);
-
-    writeFile(result, newFileLen, nullTail, codeTable);
+void writeFile(char* filename, char *result, unsigned long newFileLen, unsigned long nullTail, char ** code){
+    FILE * out = fopen(filename, "wb");
+    printf("%s", result);
+    fprintf(out, "%s", result);
 }
 
-void makeCode(NODE *head, char *s_string, unsigned long len, char** code,unsigned long *newLen)
+
+void compression(FILE *input, char *name){
+    NODE *head = makeList(input);
+    // printf("made list");
+    head = MakeTreeFromList(head);
+
+    char codeString[256] = {0};//можно увеличить длину - строка для хранения кода символ
+    char ** codeTable = (char**)calloc(256 , sizeof (char*));
+    makeCode(head, codeString, 0, codeTable);
+    for (int i = 0; i < 256; ++i){
+        if(codeTable[i]){
+            printf("%s ", codeTable[i]);
+        }
+    }
+    unsigned long newFileLen = 0;
+    unsigned long nullTail = 0;
+    char* result = makeStr(codeTable, input, &newFileLen, &nullTail);
+
+    writeFile(name, result, newFileLen, nullTail, codeTable);
+}
+
+void makeCode(NODE *head, char *s_string, unsigned long len, char** code)
 {
+
     if(head-> isSymb)
     {
         s_string[len] = 0;
         code[head->symb] =  (char *) malloc(len * sizeof(char));
         strcpy(code[head->symb], s_string);
-        *newLen += len;
+        printf("%c %s\n", head->symb, code[head->symb]);
         return;
 
     }
     s_string[len] = '0';
-    makeCode(head->left, s_string, len + 1, code, newLen);
+    makeCode(head->left, s_string, len + 1, code);
+
     s_string[len] = '1';
-    makeCode(head->right, s_string, len + 1, code, newLen);
+    makeCode(head->right, s_string, len + 1, code);
 }
 
-char* makeStr(char** codeTable,const unsigned long lenStr, FILE *input, unsigned long* newFileLen, unsigned long* nullTail ){
+char* makeStr(char** codeTable, FILE *input, unsigned long *newFileLen, unsigned long* nullTail){
     fseek(input, 0L, SEEK_END);
     long fileLen = ftell(input);//length of file
     fseek(input, 0, SEEK_SET);// return to begin
 
-    char* outString = (char*)malloc(lenStr * sizeof (char));
+    char* outString = (char*)malloc(fileLen * sizeof (char) * 256);
 
     for (int i = 0; i < fileLen; ++i){//replace temp -> codeTable
         unsigned char symbol = (unsigned char) fgetc(input);
@@ -120,7 +132,8 @@ char* makeStr(char** codeTable,const unsigned long lenStr, FILE *input, unsigned
             strcpy(&outString[i + j], &codeTable[symbol][j]);
         }
     }
-
+    printf("\n");
+    printf(outString);
     unsigned int count = strlen(outString) / BIT8;
     *nullTail = strlen(outString) % BIT8;
     *newFileLen = count + 1;
@@ -138,7 +151,6 @@ char* makeStr(char** codeTable,const unsigned long lenStr, FILE *input, unsigned
         temp.mbit.b8 = (unsigned char)outString[i * BIT8 + 7];
         result[i] = temp.symbol;
     }
+    printf("%s", result);
     return result;
 }
-
-void writeFile(char *result,unsigned long newFileLen,unsigned long nullTail, char ** code){}
