@@ -229,7 +229,7 @@ void decode(char* source, char* filename, StrMap* dict, unsigned long newFileLen
     FILE * out = fopen(filename, "wb");
     char *key = (char *) malloc(len * sizeof(char));
     char *result = (char *) malloc(len * sizeof(char));
-    for(int i = 0; i < newFileLen; ++i){
+    for(int i = 0; i < newFileLen * 8; ++i){
         if(sm_exists(dict, key)){  // If symb code exists then decode
             result[strlen(result)] = sm_get(dict,key);
             key[0] = 0;

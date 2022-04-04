@@ -3,3 +3,9 @@
 30	260	6707650684173126	CMakeFiles/file_compression.dir/dict.c.obj	83e7c0c0d800b980
 0	268	6707650684252612	CMakeFiles/file_compression.dir/Huffman.c.obj	c3c1e99281413fa7
 268	518	6707650686630048	file_compression.exe	a0d612c1561099d4
+2	174	6707655345476969	CMakeFiles/file_compression.dir/dict.c.obj	83e7c0c0d800b980
+175	373	6707655347293956	file_compression.exe	a0d612c1561099d4
+3	198	6707656167643646	CMakeFiles/file_compression.dir/main.c.obj	d4bf93262cd71cef
+199	377	6707656169398602	file_compression.exe	a0d612c1561099d4
+2	158	6707665642510433	CMakeFiles/file_compression.dir/Huffman.c.obj	c3c1e99281413fa7
+159	332	6707665644187730	file_compression.exe	a0d612c1561099d4
