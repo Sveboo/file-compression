@@ -1,0 +1,5 @@
+# ninja log v5
+26	224	6707650683734904	CMakeFiles/file_compression.dir/main.c.obj	d4bf93262cd71cef
+30	260	6707650684173126	CMakeFiles/file_compression.dir/dict.c.obj	83e7c0c0d800b980
+0	268	6707650684252612	CMakeFiles/file_compression.dir/Huffman.c.obj	c3c1e99281413fa7
+268	518	6707650686630048	file_compression.exe	a0d612c1561099d4

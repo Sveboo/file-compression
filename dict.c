@@ -224,6 +224,22 @@ static unsigned long hash(const char *str)
     return hash;
 }
 
+void decode(char* source, char* filename, StrMap* dict, unsigned long newFileLen, unsigned long len){
+    // filename == NEW FILE NAME!
+    FILE * out = fopen(filename, "wb");
+    char *key = (char *) malloc(len * sizeof(char));
+    char *result = (char *) malloc(len * sizeof(char));
+    for(int i = 0; i < newFileLen; ++i){
+        if(sm_exists(dict, key)){  // If symb code exists then decode
+            result[strlen(result)] = sm_get(dict,key);
+            key[0] = 0;
+        }
+        else{
+            key[strlen(key)] = source[i]; // Else search for existing code
+        }
+    }
+    fprintf(out, "%s", result); //Write nex file
+}
 
 int kmain () {
     StrMap* dict = sm_new(256);
