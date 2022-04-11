@@ -1,10 +1,10 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include "Huffman.h"
 
+
 int main() {
-    FILE *input = fopen("tests.txt", "rb");
+    FILE *input = fopen("billy.jpg", "rb");
     compression(input);
-   fclose(input);
+    uncompress("tests.hf");
+    fclose(input);
 }

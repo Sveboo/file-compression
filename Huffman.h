@@ -1,6 +1,7 @@
 #ifndef HUFFMAN_H
 #define HUFFMAN_H
 
+enum error{OPEN_FILE};
 typedef struct node {
     unsigned char symb;
     unsigned char isSymb;
@@ -30,15 +31,17 @@ NODE* MakeNodeFromNode(const NODE * left, const NODE * right);
 
 NODE* MakeNode(char symb,unsigned long freq);
 
-NODE* makeList(FILE *input);
+NODE* makeList(FILE *input, unsigned long *fileLen);
 
 void compression(FILE *input);
 
-void makeCode(NODE *head, char *s_string, unsigned long len, char** code, unsigned long *newLen);
+void makeCode(NODE *head, char *s_string, unsigned long len, char** code, unsigned long *countSymb);
 
 char* makeStr(char** codeTable,const unsigned long newLen, FILE *input,
               unsigned long* newFileLen, unsigned long* nullTail);
 
-void writeFile(char *result,unsigned long newFileLen,unsigned long nullTail, char ** code);
+int writeResult(char ** codeTable, FILE* input, unsigned long fileLen, char *compFile,unsigned long *countSymb);
+
+int uncompress(char* compresFile);
 #endif
 
