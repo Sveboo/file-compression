@@ -87,11 +87,11 @@ void compression(FILE *input){
     unsigned long countSymb = 0;
     makeCode(head, codeString, 0, codeTable, &countSymb);
 
-    for (int i = 0; i < 256; ++i){
-        if (codeTable[i]){
-            printf("%s - %c\n", codeTable[i], i);
-        }
-    }
+//    for (int i = 0; i < 256; ++i){
+//        if (codeTable[i]){
+//            printf("%s - %c\n", codeTable[i], i);
+//        }
+//    }
 
     writeResult(codeTable, input, fileLen, "tests.hf", countSymb);
     //unsigned long newFileLen = 0;
@@ -237,7 +237,7 @@ int uncompress(char* compresFile){
     {
         return OPEN_FILE;//If the opening fails, an error message will be output
     }
-    output = fopen("uncompress.jpg", "wb");
+    output = fopen("unncompress.exe", "wb");
     if (output == NULL)
     {
         return OPEN_FILE;
@@ -274,12 +274,10 @@ int uncompress(char* compresFile){
         }
         bx[SymbLen] = 0;
         smPut(dict,  bx, symb);
-
-        printf("%s - %c\n",bx, smGet(dict,bx));
+        //printf("%s - %c\n",bx, smGet(dict,bx));
         bx[0] = 0;
 
-    }
-    printf("end dict\n");
+    }//printf("end dict\n");
     fseek(input, 8, SEEK_SET);
     unsigned long i = 0;
     bx[0] = 0;
@@ -296,22 +294,22 @@ int uncompress(char* compresFile){
             strcat(bx, "0");
         }
         strcat(bx, buf);
-        printf("buf %s\n", buf);
-        printf("bx %s\n", bx);
+        //printf("buf %s\n", buf);
+        //printf("bx %s\n", bx);
         int flag = 1;
         while (flag) {
             flag = 0;
             for (int j = 1; j < strlen(bx)+1; ++j) {
                 strncpy(ka, bx, j);
-                temp = smGet(dict, ka);
-                printf("ka %s\n", ka);
-                if (temp) {
+                //printf("ka %s\n", ka);
+                if (smExists(dict, ka)) {
+                    temp = smGet(dict, ka);
                     fwrite(&temp, 1, 1, output);
                     ++i;
                     strcpy(bx, bx + j);
                     memset(ka, 0, sizeof ka);
-                    printf("found %c\n", temp);
-                 //   printf("new ka\n");
+                    //printf("found %c\n", temp);
+                    //printf("new ka\n");
                     flag = 1;
                     break; // нахер
                 }

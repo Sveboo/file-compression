@@ -199,7 +199,7 @@ static Pair * getPair(Bucket *bucket, const char *key)
     pair = bucket->pairs;
     i = 0;
     while (i < n) {
-        if (pair->key != NULL && pair->value) {
+        if (pair->key != NULL) {
             if (strcmp(pair->key, key) == 0) {
                 return pair;
             }
