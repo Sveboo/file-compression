@@ -3,7 +3,7 @@
 
 
 int main() {
-    FILE *input = fopen("Install League of Legends ru.exe", "rb");
+    FILE *input = fopen("billy.bmp", "rb");
     compression(input);
     uncompress("tests.hf");
     fclose(input);
