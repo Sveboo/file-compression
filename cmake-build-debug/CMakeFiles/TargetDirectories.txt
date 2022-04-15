@@ -1,0 +1,3 @@
+C:/Users/Max/Desktop/Programming/2021-2022/C/file-compression/cmake-build-debug/CMakeFiles/file_compression.dir
+C:/Users/Max/Desktop/Programming/2021-2022/C/file-compression/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Max/Desktop/Programming/2021-2022/C/file-compression/cmake-build-debug/CMakeFiles/rebuild_cache.dir

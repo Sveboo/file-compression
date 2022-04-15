@@ -76,7 +76,7 @@ NODE* makeList(FILE *input, unsigned long *fileLen){
 }
 
 
-void compression(FILE *input){
+void compression(FILE *input, FILE *output){
     unsigned long fileLen = 0;
     NODE *head = makeList(input, &fileLen);
 
@@ -93,7 +93,7 @@ void compression(FILE *input){
 //        }
 //    }
 
-    writeResult(codeTable, input, fileLen, "tests.hf", countSymb);
+    writeResult(codeTable, input, fileLen, output, countSymb);
     //unsigned long newFileLen = 0;
     //unsigned long nullTail = 0;
     //char* result = makeStr(codeTable, countSymb, input, &newFileLen, &nullTail);
@@ -150,8 +150,7 @@ char* makeStr(char** codeTable,const unsigned long lenStr, FILE *input, unsigned
     return result;
 }
 
-int writeResult(char ** codeTable, FILE* input, unsigned long fileLen, char *compFile, unsigned long *countSymb){
-    FILE* output = fopen(compFile,"wb");
+int writeResult(char ** codeTable, FILE* input, unsigned long fileLen, FILE* output, unsigned long *countSymb){
     printf("The original file has %d characters\n", fileLen);
     char buffer[512] = {0};
     fseek(input, 0, SEEK_SET);//Set the pointer at the beginning of the file
@@ -224,20 +223,16 @@ int writeResult(char ** codeTable, FILE* input, unsigned long fileLen, char *com
             codeTable[i] = temp;
         }
     }
-    fclose(output);
     printf("The compressed file has: %d characters\n", pt1 + 4);
 }
 
-int uncompress(char* compresFile){
+int uncompress(FILE *input, FILE *output){
     char buf[256], bx[256];
-    FILE *input, *output;
     char c_name[512] = {0};
-    input = fopen(compresFile, "rb");
     if (input == NULL)
     {
         return OPEN_FILE;//If the opening fails, an error message will be output
     }
-    output = fopen("unncompress.exe", "wb");
     if (output == NULL)
     {
         return OPEN_FILE;
@@ -319,8 +314,5 @@ int uncompress(char* compresFile){
 
         if (i == fileLen) break;
     }
-
-    fclose(input);
-    fclose(output);
     return 1;
 }
