@@ -1,4 +1,12 @@
 # ninja log v5
-2	257	6717366119020323	CMakeFiles/file_compression.dir/Huffman.c.obj	c3c1e99281413fa7
-2	180	6717378797005831	CMakeFiles/file_compression.dir/main.c.obj	d4bf93262cd71cef
+5	207	6717534986757193	CMakeFiles/file_compression.dir/Huffman.c.obj	bbbd882b82484d0a
+6	169	6717534986418102	CMakeFiles/file_compression.dir/dict.c.obj	6db468075ad60678
+3	85	6717548384481175	CMakeFiles/file_compression.dir/main.c.obj	96b0433102fde379
 0	22	0	clean	80727070b5b16674
+86	202	6717548385588214	file_compression.exe	9963d7aea459bd95
+35	260	6717552885065734	CMakeFiles/file_compression.dir/main.c.obj	d4bf93262cd71cef
+1	317	6717552885667231	CMakeFiles/file_compression.dir/dict.c.obj	83e7c0c0d800b980
+39	383	6717552886350805	CMakeFiles/file_compression.dir/Huffman.c.obj	c3c1e99281413fa7
+384	605	6717552888482804	file_compression.exe	a0d612c1561099d4
+3	150	6717557752518897	CMakeFiles/file_compression.dir/main.c.obj	d4bf93262cd71cef
+151	397	6717557754892445	file_compression.exe	a0d612c1561099d4
