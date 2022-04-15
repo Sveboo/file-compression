@@ -3,36 +3,23 @@
 #include <string.h>
 #include "Huffman.h"
 #include "dict.h"
+#define BIT8 8
 
-void AddList(NODE **head, NODE *element) {// добавление нового символа в массив
-    NODE **tempNode = head;
-
-    while (*tempNode) {//вставка исходя из его частоты
-        if (element->freq < (*tempNode)->freq)
+void AddList(NODE **pphead, NODE *elem) {
+    NODE **pp = pphead;
+    while (*pp) {
+        if (elem->freq < (*pp)->freq)
             break;
         else
-            tempNode = &((*tempNode)->next);
+            pp = &((*pp)->next);
     }
-
-    NODE* newNode = element;
-    newNode->next = *tempNode;
-    *tempNode = newNode;
-}
-
-NODE *MakeNodeFromNode(const NODE * left, const NODE * right)// объединение двух узлов
-{
-    NODE * res = (NODE*)malloc(sizeof(NODE));
-    res->freq = left->freq + right->freq;
-    res->isSymb = 0;
-    res->symb = 0;
-    res->left = left;
-    res->right = right;
-    res->next = 0;
-    return res;
+    NODE* pnew = elem;
+    pnew->next = *pp;
+    *pp = pnew;
 }
 
 
-NODE * MakeTreeFromList(NODE * head)// формирование бинарного дерева
+NODE * MakeTreeFromList(NODE * head)
 {
     while (head && head->next)
     {
@@ -45,7 +32,20 @@ NODE * MakeTreeFromList(NODE * head)// формирование бинарног
 }
 
 
-NODE* MakeNode(char symb, unsigned long freq){// создание узла для нового символа
+NODE *MakeNodeFromNode(const NODE * left, const NODE * right)
+{
+    NODE * res = (NODE*)malloc(sizeof(NODE));
+    res->freq = left->freq + right->freq;
+    res->isSymb = 0;
+    res->symb = 0;
+    res->left = left;
+    res->right = right;
+    res->next = 0;
+    return res;
+}
+
+
+NODE* MakeNode(char symb, unsigned long freq){
     NODE * temp = (NODE*)malloc(sizeof(NODE));
     temp->freq = freq;
     temp->symb = symb;
@@ -56,31 +56,51 @@ NODE* MakeNode(char symb, unsigned long freq){// создание узла дл�
 }
 
 
-NODE* makeList(FILE *input, unsigned long *fileLen){//получение данных файла
+NODE* makeList(FILE *input, unsigned long *fileLen){
     unsigned long freq[256] = {0};
+    if (!input)
+        return OPEN_FILE;
     fseek(input, 0L, SEEK_END);
     *fileLen =  ftell(input);
     fseek(input, 0, SEEK_SET);
-
     for (int i = 0; i < *fileLen; ++i) {
         freq[(unsigned char) fgetc(input)]++;
     }
-
     NODE *head = NULL;
-
-    for (int i = 0; i < 256; ++i){// создание списка символов
+    for (int i = 0; i < 256; ++i){
         if (freq[i] != 0){
             AddList(&head, MakeNode(i, freq[i]));
         }
     }
-
     return head;
 }
 
 
-void makeCode(NODE *head, char *s_string, unsigned long len, char** code,unsigned long *countSymb)
-{//составление кода, индекс - символ по таблице ASCII
+void compression(FILE *input, FILE *output){
+    unsigned long fileLen = 0;
+    NODE *head = makeList(input, &fileLen);
 
+    head = MakeTreeFromList(head);
+
+    char codeString[256] = {0};//можно увеличить длину - строка для хранения кода символа
+    char ** codeTable = (char**)calloc(256 , sizeof (char*));
+    unsigned long countSymb = 0;
+    makeCode(head, codeString, 0, codeTable, &countSymb);
+
+//    for (int i = 0; i < 256; ++i){
+//        if (codeTable[i]){
+//            printf("%s - %c\n", codeTable[i], i);
+//        }
+//    }
+
+    writeResult(codeTable, input, fileLen, output, countSymb);
+    //unsigned long newFileLen = 0;
+    //unsigned long nullTail = 0;
+    //char* result = makeStr(codeTable, countSymb, input, &newFileLen, &nullTail);
+}
+
+void makeCode(NODE *head, char *s_string, unsigned long len, char** code,unsigned long *countSymb)
+{
     if(head-> isSymb)
     {
         s_string[len] = 0;
@@ -88,39 +108,65 @@ void makeCode(NODE *head, char *s_string, unsigned long len, char** code,unsigne
         strcpy(code[head->symb], s_string);
         *countSymb += 1;
         return;
+
     }
-
     s_string[len] = '0';
-    makeCode(head->left, s_string, len + 1, code, countSymb);// рекурсивный перебор левой части
-
+    makeCode(head->left, s_string, len + 1, code, countSymb);
     s_string[len] = '1';
-    makeCode(head->right, s_string, len + 1, code, countSymb);// рекурсивный перебор правой части
+    makeCode(head->right, s_string, len + 1, code, countSymb);
 }
 
-int writeResult(char ** codeTable, FILE* input, unsigned long fileLen, char *compFile, unsigned long *countSymb){
-    FILE* output = fopen(compFile,"wb");
+char* makeStr(char** codeTable,const unsigned long lenStr, FILE *input, unsigned long* newFileLen, unsigned long* nullTail ){
+    fseek(input, 0L, SEEK_END);
+    long fileLen = ftell(input);//length of file
+    fseek(input, 0, SEEK_SET);// return to begin
 
-    if(!(output)){
-        return OPEN_FILE;
+    char* outString = (char*)malloc(lenStr * sizeof (char));
+
+    for (int i = 0; i < fileLen; ++i){//replace temp -> codeTable
+        unsigned char symbol = (unsigned char) fgetc(input);
+        unsigned int codeLen = strlen(codeTable[symbol]);
+        for (int j = 0; j < codeLen; ++j){
+            strcpy(&outString[i + j], &codeTable[symbol][j]);
+        }
     }
 
+    unsigned int count = strlen(outString) / BIT8;
+    *nullTail = strlen(outString) % BIT8;
+    *newFileLen = count + 1;BIT2CHAR temp;
+    char * result = (char*)malloc((*newFileLen) * sizeof(char));
+    for (int i = 0; i < *newFileLen; ++i)
+    {
+        temp.mbit.b1 = (unsigned char)outString[i * BIT8 + 0];
+        temp.mbit.b2 = (unsigned char)outString[i * BIT8 + 1];
+        temp.mbit.b3 = (unsigned char)outString[i * BIT8 + 2];
+        temp.mbit.b4 = (unsigned char)outString[i * BIT8 + 3];
+        temp.mbit.b5 = (unsigned char)outString[i * BIT8 + 4];
+        temp.mbit.b6 = (unsigned char)outString[i * BIT8 + 5];
+        temp.mbit.b7 = (unsigned char)outString[i * BIT8 + 6];
+        temp.mbit.b8 = (unsigned char)outString[i * BIT8 + 7];
+        result[i] = temp.symbol;
+    }
+    return result;
+}
+
+int writeResult(char ** codeTable, FILE* input, unsigned long fileLen, FILE* output, unsigned long *countSymb){
     printf("The original file has %d characters\n", fileLen);
     char buffer[512] = {0};
-    fseek(input, 0, SEEK_SET);//помещение указателя на начало файла
-    fseek(output, 8, SEEK_SET);//Считывание в единицах 8-разрядных двоичных чисел
+    fseek(input, 0, SEEK_SET);//Set the pointer at the beginning of the file
+    fseek(output, 8, SEEK_SET);//Read in units of 8-bit binary numbers
     unsigned long pt1 = 8;
     unsigned char compInf = 0;
     unsigned long curLen = 0;
-
     for (int i = 0; i < fileLen; ++i) {
         unsigned char symb = fgetc(input);
         if (codeTable[symb]) {
             strcat(buffer, codeTable[symb]);
             curLen = strlen(buffer);
-
-            while (curLen >= 8)// если кол-во символов в buffer не менее 8
+            while (curLen >= 8)//When the number of remaining characters is not less than 8
             {
-                for (int j = 0; j < 8; ++j)//запись в файл данных в виде восьмизначного двоичного числа
+                for (int j = 0; j <
+                                8; ++j)//According to the eight-digit binary number converted into decimal ASCII code, write the file once for compression
                 {
                     if (buffer[j] == '1') { compInf = (compInf << 1) | 1; }
                     else { compInf = compInf << 1; }
@@ -132,27 +178,24 @@ int writeResult(char ** codeTable, FILE* input, unsigned long fileLen, char *com
             }
         }
     }
-    if (curLen > 0)//если в buffer остался код менее 8 символов, необходимых для записи
+    if (curLen > 0)//When the number of remaining characters is less than 8
         {
-            strcat(buffer, "00000000");// заполняем нулями недостающее кол-во чисел для записи
+            strcat(buffer, "00000000");
             for (int j = 0; j < 8; ++j)
             {
                 if (buffer[j] == '1') {compInf = (compInf << 1) | 1;}
-                else {compInf = compInf << 1;}
+                else {compInf = compInf << 1;}//Add zero to the insufficient number of digits
             }
             fwrite(&compInf, 1, 1, output);
             pt1 ++;
         }
 
-    fseek(output, 0, SEEK_SET);//запись информации о кодировке в сжатый файл
-    fwrite(&fileLen,1,sizeof(fileLen),output);// длина исходного файла
-    fwrite(&pt1, sizeof(long), 1, output);// указатель на позицию для чтения файла
-    // ptr1 = длина закодированной информации
-    fseek(output, pt1, SEEK_SET);// переход к позиции
-    fwrite(&countSymb, sizeof(unsigned long), 1, output);// количество символов в исходном файле
-
-    for (int i = 0; i < 256; i ++) {// запись символа и соответствующего ему кода
-
+    fseek(output, 0, SEEK_SET);//Write the encoding information into the storage file
+    fwrite(&fileLen,1,sizeof(fileLen),output);
+    fwrite(&pt1, sizeof(long), 1, output);
+    fseek(output, pt1, SEEK_SET);
+    fwrite(&countSymb, sizeof(unsigned long), 1, output);
+    for (int i = 0; i < 256; i ++) {
         if (codeTable[i]) {
             char* temp = codeTable[i];
             fwrite(&i, 1, 1, output);
@@ -160,7 +203,7 @@ int writeResult(char ** codeTable, FILE* input, unsigned long fileLen, char *com
             unsigned  long realLenC = strlen(codeTable[i]);
             fwrite(&realLenC, 1, 1, output);
             pt1++;
-            if (realLenC % 8 != 0)// если код содержит меньше 8 символов, заполняем пр-ство незначащими нулями
+            if (realLenC % 8 != 0)//When the number of digits is less than 8, add zero to the number
             {
                 for (int j = realLenC % 8; j < 8; ++j)
                     strcat(codeTable[i], "0");
@@ -173,74 +216,23 @@ int writeResult(char ** codeTable, FILE* input, unsigned long fileLen, char *com
                     else outInf = outInf << 1;
                 }
                 strcpy(codeTable[i], codeTable[i] + 8);
-                fwrite(&outInf, 1, 1, output);
+                fwrite(&outInf, 1, 1, output);//Write the resulting encoding information to the file
                 pt1++;
             }
 
             codeTable[i] = temp;
         }
     }
-
-    fclose(output);
     printf("The compressed file has: %d characters\n", pt1 + 4);
 }
 
-int compression(FILE *input){
-    unsigned long fileLen = 0;
-    NODE *head = makeList(input, &fileLen);
-    head = MakeTreeFromList(head);
-    char codeString[256] = {0};
-    char ** codeTable = (char**)calloc(256 , sizeof (char*));
-    unsigned long countSymb = 0;
-    makeCode(head, codeString, 0, codeTable, &countSymb);
-    writeResult(codeTable, input, fileLen, "tests.hf", countSymb);
-    return END_SUCCESS;
-}
-
-STRMAP* makeDict(FILE* input, unsigned long countSymb){
+int uncompress(FILE *input, FILE *output){
     char buf[256], bx[256];
-    long helpValue;
-    STRMAP* dict = smNew(countSymb);
-    for (int i = 0; i < countSymb; ++i){
-        char symb;
-        unsigned char temp;
-        fread(&symb, 1, 1, input);
-        fread(&temp, 1, 1, input);
-        unsigned long SymbLen = (unsigned long) temp;// длина символа
-
-        for (int j = 0; j < SymbLen / 8 + ((SymbLen % 8) ? 1 : 0); ++j)// длина некратна 8=>конец кода в следующем байте информации
-        {
-            fread(&temp, 1, 1, input);
-            helpValue = temp;
-            _itoa(helpValue, buf, 2);
-            helpValue = strlen(buf);
-
-            for (int l = 8; l > helpValue; l --)
-            {
-                strcat(bx, "0");//если символов недостаточно, заполняем позиции незначащими 0
-            }
-            strcat(bx, buf);
-        }
-
-        bx[SymbLen] = 0;
-        smPut(dict,  bx, symb);
-        bx[0] = 0;
-
-    }
-    return dict;
-}
-
-int uncompress(char* compresFile){
-    char buf[256], bx[256];
-    FILE *input, *output;
     char c_name[512] = {0};
-    input = fopen(compresFile, "rb");
     if (input == NULL)
     {
-        return OPEN_FILE;
+        return OPEN_FILE;//If the opening fails, an error message will be output
     }
-    output = fopen("unncompress.bmp", "wb");
-
     if (output == NULL)
     {
         return OPEN_FILE;
@@ -250,19 +242,40 @@ int uncompress(char* compresFile){
     long len = ftell(input);
     fseek(input,0,SEEK_SET);
     unsigned long fileLen;
-    fread(&fileLen, sizeof(long), 1, input);
+    fread(&fileLen, sizeof(long), 1, input);//Read the original file length
     long helpValue;
     fread(&helpValue, sizeof(long), 1, input);
     fseek(input, helpValue, SEEK_SET);
     unsigned long countSymb;
-    fread(&countSymb, sizeof(long), 1, input);
+    fread(&countSymb, sizeof(long), 1, input);//Read the parameters of the original file
+    STRMAP* dict = smNew(countSymb);
+    for (int i = 0; i < countSymb; ++i){
+        char symb;
+        unsigned char temp;
+        fread(&symb, 1, 1, input);
+        fread(&temp, 1, 1, input);
+        unsigned long SymbLen = (unsigned long) temp;//len of symbol
+        for (int j = 0; j < SymbLen / 8 + ((SymbLen % 8) ? 1 : 0); ++j)//read bit-code
+        {
+            fread(&temp, 1, 1, input);
+            helpValue = temp;
+            _itoa(helpValue, buf, 2);
+            helpValue = strlen(buf);
+            for (int l = 8; l > helpValue; l --)
+            {
+                strcat(bx, "0");//If the number of bits is insufficient, perform zero padding
+            }
+            strcat(bx, buf);
+        }
+        bx[SymbLen] = 0;
+        smPut(dict,  bx, symb);
+        //printf("%s - %c\n",bx, smGet(dict,bx));
+        bx[0] = 0;
 
-    STRMAP* dict = makeDict(input, countSymb);
-
+    }//printf("end dict\n");
     fseek(input, 8, SEEK_SET);
     unsigned long i = 0;
     bx[0] = 0;
-
     while (1)
     {
         unsigned char temp;
@@ -271,27 +284,29 @@ int uncompress(char* compresFile){
         helpValue = temp;
         _itoa(helpValue, buf, 2);
         helpValue = strlen(buf);
-
-        for (int l = 8; l > helpValue; l --)// если длина закодированной информации<8,заполняем пространство 0
+        for (int l = 8; l > helpValue; l --)
         {
             strcat(bx, "0");
         }
         strcat(bx, buf);
+        //printf("buf %s\n", buf);
+        //printf("bx %s\n", bx);
         int flag = 1;
-
-        while (flag) {// поиск соответствие кода символу
+        while (flag) {
             flag = 0;
-
             for (int j = 1; j < strlen(bx)+1; ++j) {
                 strncpy(ka, bx, j);
-                if (smExists(dict, ka)) {// нашли такой код
-                    temp = smGet(dict, ka);// получаем символ по коду
+                //printf("ka %s\n", ka);
+                if (smExists(dict, ka)) {
+                    temp = smGet(dict, ka);
                     fwrite(&temp, 1, 1, output);
                     ++i;
                     strcpy(bx, bx + j);
                     memset(ka, 0, sizeof ka);
+                    //printf("found %c\n", temp);
+                    //printf("new ka\n");
                     flag = 1;
-                    break;
+                    break; // нахер
                 }
             }
             if (i == fileLen) break;
@@ -299,8 +314,5 @@ int uncompress(char* compresFile){
 
         if (i == fileLen) break;
     }
-
-    fclose(input);
-    fclose(output);
-    return END_SUCCESS;
+    return 1;
 }
